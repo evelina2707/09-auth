@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes } from '@/lib/api/clientApi';
 import NoteList from '@/components/NoteList/NoteList';
 import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
 import css from '@/components/NotesPage/NotesPage.module.css';
 import Link from 'next/link';
+import { NoteTag } from '@/types/note';
 
 type Props = {
-  tag?: string;
+  tag?: NoteTag;
 };
 
 export default function NotesClient({ tag }: Props) {
