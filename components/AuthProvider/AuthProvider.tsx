@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { checkSession, getMe } from '@/lib/api/clientApi';
+import { getMe } from '@/lib/api/clientApi';
 import { useAuthStore } from '@/lib/store/authStore';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -11,22 +11,18 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     let ignore = false;
 
-    (async () => {
-      try {
-        const sessionValid = await checkSession();
+   (async () => {
+  try {
+    const user = await getMe();
 
-        if (!sessionValid) {
-          clearAuth();
-          return;
-        }
-
-        const user = await getMe();
-
-        if (!ignore) setUser(user);
-      } catch {
-        clearAuth();
-      }
-    })();
+    if (!ignore) {
+      setUser(user);
+    }
+  } catch {
+    clearAuth();
+  }
+   })();
+    
 
     return () => {
       ignore = true;

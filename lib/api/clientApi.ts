@@ -30,7 +30,6 @@ export async function deleteNote(id: string): Promise<void> {
   await api.delete(`/notes/${id}`);
 }
 
-// AUTH
 export async function register(email: string, password: string): Promise<User> {
   const { data } = await api.post<User>('/auth/register', { email, password });
   return data;
@@ -45,24 +44,7 @@ export async function logout(): Promise<void> {
   await api.post('/auth/logout');
 }
 
-export async function checkSession(): Promise<boolean> {
-  try {
-    const res = await api.get('/auth/session');
-    return res.status === 200;
-  } catch {
-    return false;
-  }
-}
-
 export async function getMe(): Promise<User> {
   const { data } = await api.get<User>('/users/me');
-  return data;
-}
-
-export async function updateMe(userData: {
-  email?: string;
-  password?: string;
-}): Promise<User> {
-  const { data } = await api.patch<User>('/users/me', userData);
   return data;
 }
