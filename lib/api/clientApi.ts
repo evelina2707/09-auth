@@ -48,3 +48,10 @@ export async function getMe(): Promise<User> {
   const { data } = await api.get<User>('/users/me');
   return data;
 }
+
+export async function updateMe(userData: {
+  username?: string;
+}): Promise<User> {
+  const { data } = await api.patch<User>('/users/me', userData);
+  return data;
+}
