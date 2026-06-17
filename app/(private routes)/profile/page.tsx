@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getMe } from '@/lib/api/serverApi';
-import css from './EditProfilePage.module.css';
+import css from './ProfilePage.module.css';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
