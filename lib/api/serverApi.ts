@@ -1,40 +1,44 @@
 import { cookies } from 'next/headers';
+import { User } from '@/types/user';
+import { Note } from '@/types/note';
 import api from './api';
-import type { User } from '@/types/user';
 
-async function getCookieHeader() {
+export const checkServerSession = async () => {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get('accessToken')?.value;
-  const refreshToken = cookieStore.get('refreshToken')?.value;
-
-  const cookiesArray: string[] = [];
-  if (accessToken) cookiesArray.push(`accessToken=${accessToken}`);
-  if (refreshToken) cookiesArray.push(`refreshToken=${refreshToken}`);
-
-  return cookiesArray.join('; ');
-}
-
-export async function getMe(): Promise<User> {
-  const cookieHeader = await getCookieHeader();
-
-  const { data } = await api.get<User>('/users/me', {
-    headers: { 
-      'Cookie': cookieHeader,
+  return await api.get<{ success: boolean }>('/auth/session', {
+    headers: {
+      Cookie: cookieStore.toString(),
     },
   });
-  return data;
-}
+};
 
-export async function checkSession(): Promise<boolean> {
-  try {
-    const cookieHeader = await getCookieHeader();
-    const { data } = await api.get('/auth/session', {
-      headers: { 
-        'Cookie': cookieHeader,
-      },
-    });
-    return !!data;
-  } catch {
-    return false;
-  }
-}
+export const getServerMe = async (): Promise<User> => {
+  const cookieStore = await cookies();
+  const res = await api.get<User>('/users/me', {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return res.data;
+};
+
+export const fetchNotes = async (params?: Record<string, unknown>): Promise<Note[]> => {
+  const cookieStore = await cookies();
+  const res = await api.get<Note[]>('/notes', {
+    params,
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return res.data;
+};
+
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const cookieStore = await cookies();
+  const res = await api.get<Note>(`/notes/${id}`, {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+  });
+  return res.data;
+};

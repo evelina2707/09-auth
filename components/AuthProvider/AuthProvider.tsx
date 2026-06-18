@@ -1,25 +1,20 @@
 'use client';
 
 import { useEffect } from 'react';
-import { getMe } from '@/lib/api/clientApi';
+import { checkSession, getMe } from '@/lib/api/clientApi';
 import { useAuthStore } from '@/lib/store/authStore';
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
-  const setUser = useAuthStore((state) => state.setUser);
-  const clearAuth = useAuthStore((state) => state.clearIsAuthenticated);
-
+  const { setUser, clearIsAuthenticated } = useAuthStore();
   useEffect(() => {
-    let ignore = false;
-    (async () => {
-      try {
+    checkSession().then(async (isValid) => {
+      if (isValid) {
         const user = await getMe();
-        if (!ignore) setUser(user);
-      } catch {
-        clearAuth();
+        setUser(user);
+      } else {
+        clearIsAuthenticated();
       }
-    })();
-    return () => { ignore = true; };
-  }, [setUser, clearAuth]);
-
+    });
+  }, [setUser, clearIsAuthenticated]);
   return <>{children}</>;
 }

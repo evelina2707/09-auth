@@ -1,75 +1,59 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import { login } from '@/lib/api/clientApi';
 import { useAuthStore } from '@/lib/store/authStore';
 import css from './SignInPage.module.css';
 
+interface ErrorResponse {
+  response?: { data?: { error?: string } };
+  message?: string;
+}
+
 export default function SignInPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
+  const [error, setError] = useState('');
   const setUser = useAuthStore((state) => state.setUser);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError('');
+
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
     try {
-      const user = await login(email, password);
-      setUser(user); 
-      router.push('/profile');
-    } catch (err: unknown) {
-      if (
-        typeof err === 'object' &&
-        err !== null &&
-        'response' in err &&
-        typeof (err as { response?: unknown }).response === 'object' &&
-        (err as { response?: { data?: unknown } }).response &&
-        'data' in (err as { response?: { data?: unknown } }).response! &&
-        typeof ((err as { response: { data: unknown } }).response.data) === 'object' &&
-        ((err as { response: { data: { message?: string } } }).response.data as { message?: string }).message
-      ) {
-        setError(
-          ((err as { response: { data: { message?: string } } }).response.data as { message?: string }).message ||
-          'Login failed'
-        );
-      } else if (err instanceof Error) {
-        setError(err.message);
+      const res = await login({ email, password });
+      if (res) {
+        setUser(res);
+        router.push('/profile');
       } else {
-        setError('Login failed');
+        setError('Invalid email or password');
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const axiosErr = err as ErrorResponse;
+        setError(axiosErr.response?.data?.error || axiosErr.message || 'Oops... some error');
+      } else {
+        setError('An unexpected error occurred');
       }
     }
   };
 
   return (
     <main className={css.mainContent}>
-      <form className={css.form} onSubmit={handleSubmit} autoComplete="off">
+      <form className={css.form} onSubmit={handleSubmit}>
         <h1 className={css.formTitle}>Sign in</h1>
         <div className={css.formGroup}>
           <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            className={css.input}
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-          />
+          <input id="email" type="email" name="email" className={css.input} required />
         </div>
         <div className={css.formGroup}>
           <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            name="password"
-            className={css.input}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-          />
+          <input id="password" type="password" name="password" className={css.input} required />
         </div>
         <div className={css.actions}>
           <button type="submit" className={css.submitButton}>

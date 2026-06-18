@@ -1,31 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { checkServerSession } from './lib/api/serverApi'; 
 
-const privateRoutes = ['/notes', '/profile'];
-const publicRoutes = ['/sign-in', '/sign-up'];
+export default async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-export default async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const cookie = req.headers.get('cookie') || '';
-
-  const res = await fetch(
-    process.env.NEXT_PUBLIC_API_URL + '/api/auth/session',
-    { headers: { cookie } }
-  );
-  const isAuth = res.ok;
-
-  const isPrivate = privateRoutes.some(route => pathname.startsWith(route));
-  const isPublic = publicRoutes.some(route => pathname.startsWith(route));
-
-  if (isPrivate && !isAuth) {
-    return NextResponse.redirect(new URL('/sign-in', req.url));
+  if (pathname === '/' || pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')) {
+    return NextResponse.next();
   }
-  if (isPublic && isAuth) {
-    return NextResponse.redirect(new URL('/profile', req.url));
+
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('accessToken')?.value;
+
+  if (!accessToken) {
+    try {
+      await checkServerSession(); 
+    } catch (error) {
+      return NextResponse.redirect(new URL('/sign-in', request.url));
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/notes/:path*', '/profile/:path*', '/sign-in', '/sign-up'],
+  matcher: ['/', '/profile/:path*', '/notes/:path*', '/sign-in', '/sign-up'],
 };
