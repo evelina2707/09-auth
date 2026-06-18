@@ -13,7 +13,7 @@ export default async function proxy(request: NextRequest) {
   const isPrivateRoute = pathname.startsWith('/profile') || pathname.startsWith('/notes');
 
   if (accessToken && isAuthRoute) {
-    return NextResponse.redirect(new URL('/profile', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   if (isPrivateRoute) {
@@ -24,12 +24,13 @@ export default async function proxy(request: NextRequest) {
         const response = NextResponse.next();
         
         const setCookieHeader = apiResponse.headers['set-cookie'];
+        
         if (setCookieHeader) {
-          const cookieValue = Array.isArray(setCookieHeader) 
-            ? setCookieHeader.join(', ') 
-            : setCookieHeader;
-
-          response.headers.set('set-cookie', cookieValue);
+          const cookiesArray = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+          
+          cookiesArray.forEach((cookie) => {
+            response.headers.append('set-cookie', cookie);
+          });
         }
         
         return response;
