@@ -8,13 +8,9 @@ import { createNote } from '@/lib/api/clientApi';
 import { useNoteStore } from '@/lib/store/noteStore';
 import css from './NoteForm.module.css';
 
-interface NoteFormProps {
-  onCancel: () => void;
-}
-
 const TAGS: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
 
-export default function NoteForm({ onCancel }: NoteFormProps) {
+export default function NoteForm() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -127,7 +123,7 @@ export default function NoteForm({ onCancel }: NoteFormProps) {
         <button
           type="button"
           className={css.cancelButton}
-          onClick={onCancel}
+          onClick={() => router.back()}
           disabled={isSubmitting || createMutation.isPending}
         >
           Cancel

@@ -1,22 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { checkServerSession } from './lib/api/serverApi'; 
+import { checkServerSession } from './lib/api/serverApi';
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const cookieStore = await cookies();
+  
+  const accessToken = cookieStore.get('accessToken')?.value;
+  const refreshToken = cookieStore.get('refreshToken')?.value;
 
-  if (pathname === '/' || pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')) {
-    return NextResponse.next();
+  const isAuthRoute = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
+  const isPrivateRoute = pathname.startsWith('/profile') || pathname.startsWith('/notes');
+
+  if (accessToken && isAuthRoute) {
+    return NextResponse.redirect(new URL('/profile', request.url)); // Згідно з ТЗ, редірект на профіль
   }
 
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('accessToken')?.value;
-
-  if (!accessToken) {
-    try {
-      await checkServerSession(); 
-    } catch (error) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
+  if (isPrivateRoute) {
+    if (!accessToken) {
+      try {
+        const response = await checkServerSession();
+        
+        const nextResponse = NextResponse.next();
+        
+        return nextResponse;
+      } catch (error) {
+        return NextResponse.redirect(new URL('/sign-in', request.url));
+      }
     }
   }
 
@@ -24,7 +34,5 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/profile/:path*', '/notes/:path*', '/sign-in', '/sign-up'],
 };
