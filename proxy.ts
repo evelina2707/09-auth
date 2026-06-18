@@ -19,9 +19,20 @@ export default async function proxy(request: NextRequest) {
   if (isPrivateRoute) {
     if (!accessToken && refreshToken) {
       try {
-        await checkServerSession();
+        const apiResponse = await checkServerSession();
         
-        return NextResponse.next();
+        const response = NextResponse.next();
+        
+        const setCookieHeader = apiResponse.headers['set-cookie'];
+        if (setCookieHeader) {
+          const cookieValue = Array.isArray(setCookieHeader) 
+            ? setCookieHeader.join(', ') 
+            : setCookieHeader;
+
+          response.headers.set('set-cookie', cookieValue);
+        }
+        
+        return response;
       } catch (error) {
         return NextResponse.redirect(new URL('/sign-in', request.url));
       }
