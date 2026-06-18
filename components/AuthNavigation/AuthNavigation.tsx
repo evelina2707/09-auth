@@ -7,9 +7,9 @@ import { useAuthStore } from '@/lib/store/authStore';
 import css from './AuthNavigation.module.css';
 
 export default function AuthNavigation() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const clearIsAuthenticated = useAuthStore((state) => state.clearIsAuthenticated);
-  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+  const user = useAuthStore(s => s.user);
+  const clearIsAuthenticated = useAuthStore(s => s.clearIsAuthenticated);
   const router = useRouter();
 
   const handleLogout = async () => {

@@ -12,7 +12,6 @@ export async function fetchNotes(params: {
     '/notes',
     { params }
   );
-
   return data;
 }
 

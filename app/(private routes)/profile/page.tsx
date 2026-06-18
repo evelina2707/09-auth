@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getMe } from '@/lib/api/serverApi';
+import { getMe } from '@/lib/api/serverApi'; 
 import css from './ProfilePage.module.css';
 import Image from 'next/image';
 
@@ -33,20 +33,20 @@ export default async function ProfilePage() {
             Edit Profile
           </a>
         </div>
-
         <div className={css.avatarWrapper}>
-          <Image
-            src={user.avatar}
-            alt="User Avatar"
-            width={120}
-            height={120}
-            className={css.avatar}
-          />
+          {user?.avatar && (
+            <Image
+              src={user.avatar}
+              alt="User Avatar"
+              width={120}
+              height={120}
+              className={css.avatar}
+            />
+          )}
         </div>
-
         <div className={css.profileInfo}>
-          <p>Username: {user.username}</p>
-          <p>Email: {user.email}</p>
+          <p>Username: {user?.username}</p>
+          <p>Email: {user?.email}</p>
         </div>
       </div>
     </main>

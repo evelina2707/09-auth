@@ -10,23 +10,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     let ignore = false;
-
-   (async () => {
-  try {
-    const user = await getMe();
-
-    if (!ignore) {
-      setUser(user);
-    }
-  } catch {
-    clearAuth();
-  }
-   })();
-    
-
-    return () => {
-      ignore = true;
-    };
+    (async () => {
+      try {
+        const user = await getMe();
+        if (!ignore) setUser(user);
+      } catch {
+        clearAuth();
+      }
+    })();
+    return () => { ignore = true; };
   }, [setUser, clearAuth]);
 
   return <>{children}</>;
