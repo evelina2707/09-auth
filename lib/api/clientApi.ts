@@ -1,4 +1,4 @@
-import api from './api';
+import  api from './api';
 import { User } from '@/types/user';
 import { Note, CreateNoteData } from '@/types/note';
 
@@ -30,8 +30,8 @@ export const getMe = async (): Promise<User> => {
   return res.data;
 };
 
-export const updateMe = async (data: UpdateUserRequest): Promise<User> => {
-  const res = await api.patch<User>('/users/me', data);
+export const updateMe = async (data: { username: string }) => {
+  const res = await api.patch('/users/me', data); 
   return res.data;
 };
 
