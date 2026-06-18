@@ -10,5 +10,5 @@ export default function CreateNoteClient() {
     router.push('/notes');
   };
 
-  return <NoteForm onCancel={handleCancel} />;
+  return <NoteForm/>;
 }
