@@ -41,7 +41,7 @@ export default function NoteForm() {
     if (draft.content.length > 500) {
       newErrors.content = 'Content must be no more than 500 characters.';
     }
-    if (!TAGS.includes(draft.tag)) {
+    if (!TAGS.includes(draft.tag as NoteTag)) {
       newErrors.tag = 'Please select a valid tag.';
     }
     return newErrors;
@@ -112,8 +112,10 @@ export default function NoteForm() {
           onChange={handleChange}
           required
         >
-          {TAGS.map(option => (
-            <option value={option} key={option}>{option}</option>
+          {TAGS.map((option) => (
+            <option value={option} key={option}>
+              {option}
+            </option>
           ))}
         </select>
         {errors.tag && <span className={css.error}>{errors.tag}</span>}

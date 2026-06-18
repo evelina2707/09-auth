@@ -13,20 +13,22 @@ export default async function proxy(request: NextRequest) {
   const isPrivateRoute = pathname.startsWith('/profile') || pathname.startsWith('/notes');
 
   if (accessToken && isAuthRoute) {
-    return NextResponse.redirect(new URL('/profile', request.url)); // Згідно з ТЗ, редірект на профіль
+    return NextResponse.redirect(new URL('/profile', request.url));
   }
 
   if (isPrivateRoute) {
-    if (!accessToken) {
+    if (!accessToken && refreshToken) {
       try {
-        const response = await checkServerSession();
+        await checkServerSession();
         
-        const nextResponse = NextResponse.next();
-        
-        return nextResponse;
+        return NextResponse.next();
       } catch (error) {
         return NextResponse.redirect(new URL('/sign-in', request.url));
       }
+    }
+
+    if (!accessToken && !refreshToken) {
+      return NextResponse.redirect(new URL('/sign-in', request.url));
     }
   }
 
