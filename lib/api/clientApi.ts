@@ -1,6 +1,7 @@
 import  api from './api';
 import { User } from '@/types/user';
 import { Note, CreateNoteData } from '@/types/note';
+import { NotesResponse } from '@/types/note';
 
 export type RegisterRequest = { email: string; password: string };
 export type LoginRequest = { email: string; password: string };
@@ -35,8 +36,8 @@ export const updateMe = async (data: { username: string }) => {
   return res.data;
 };
 
-export const fetchNotes = async (params?: Record<string, unknown>): Promise<Note[]> => {
-  const res = await api.get<Note[]>('/notes', { params });
+export const fetchNotes = async (params?: Record<string, unknown>): Promise<NotesResponse> => {
+  const res = await api.get<NotesResponse>('/notes', { params });
   return res.data;
 };
 

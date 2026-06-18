@@ -8,7 +8,7 @@ import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
 import css from '@/components/NotesPage/NotesPage.module.css';
 import Link from 'next/link';
-import { NoteTag } from '@/types/note';
+import { NoteTag, NotesResponse } from '@/types/note';
 
 type Props = {
   tag?: NoteTag;
@@ -28,7 +28,7 @@ export default function NotesClient({ tag }: Props) {
     return () => window.clearTimeout(timeoutId);
   }, [search]);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<NotesResponse>({
     queryKey: ['notes', page, debouncedSearch, tag],
     queryFn: () =>
       fetchNotes({
@@ -46,8 +46,8 @@ export default function NotesClient({ tag }: Props) {
 
   if (isLoading) return <p>Loading, please wait...</p>;
   if (error) return <p>Something went wrong.</p>;
-  if (!data || !Array.isArray(data.notes)) return <p>No notes found.</p>;
-
+  if (!data || !data.notes) return <p>No notes found.</p>;
+  
   return (
     <main className={css.app}>
       <div className={css.toolbar}>
@@ -65,7 +65,7 @@ export default function NotesClient({ tag }: Props) {
         />
       )}
 
-      {data.notes.length ? (
+      {data.notes.length > 0 ? (
         <NoteList notes={data.notes} />
       ) : (
         <p>No notes found.</p>
