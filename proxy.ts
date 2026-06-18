@@ -12,39 +12,38 @@ export default async function proxy(request: NextRequest) {
   const isAuthRoute = pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up');
   const isPrivateRoute = pathname.startsWith('/profile') || pathname.startsWith('/notes');
 
-  if (accessToken && isAuthRoute) {
-    return NextResponse.redirect(new URL('/', request.url));
+  let isAuthenticated = !!accessToken;
+  const response = NextResponse.next();
+  
+  if (!isAuthenticated && refreshToken) {
+    try {
+      const apiResponse = await checkServerSession();
+      isAuthenticated = true;
+
+      const setCookieHeader = apiResponse.headers['set-cookie'];
+      if (setCookieHeader) {
+        const cookiesArray = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+        cookiesArray.forEach((cookie) => {
+          response.headers.append('set-cookie', cookie);
+        });
+      }
+    } catch {
+      isAuthenticated = false;
+    }
+  }
+
+  if (isAuthenticated) {
+    if (isAuthRoute) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    return response;
   }
 
   if (isPrivateRoute) {
-    if (!accessToken && refreshToken) {
-      try {
-        const apiResponse = await checkServerSession();
-        
-        const response = NextResponse.next();
-        
-        const setCookieHeader = apiResponse.headers['set-cookie'];
-        
-        if (setCookieHeader) {
-          const cookiesArray = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
-          
-          cookiesArray.forEach((cookie) => {
-            response.headers.append('set-cookie', cookie);
-          });
-        }
-        
-        return response;
-      } catch (error) {
-        return NextResponse.redirect(new URL('/sign-in', request.url));
-      }
-    }
-
-    if (!accessToken && !refreshToken) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
-    }
+    return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
